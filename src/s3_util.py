@@ -28,6 +28,7 @@ class S3Util:
     def upload_file(self, localpath, remote_path, quite_mode=False):
         """
     Uploads a file to s3
+        :param quite_mode: If False, prints the status of each file downloaded
         :param localpath: The local path
         :param remote_path: The s3 path in format s3://mybucket/mydir/mysample.txt
         """
@@ -48,7 +49,8 @@ class S3Util:
 
             print("Uploading file {} to {} in {} seconds".format(localpath, remote_path, download_time.total_seconds()))
 
-    def _get_bucketname_key(self, uripath):
+    @staticmethod
+    def _get_bucketname_key(uripath):
         assert uripath.startswith("s3://")
 
         path_without_scheme = uripath[5:]
@@ -65,6 +67,7 @@ class S3Util:
     def download_file(self, remote_path, local_dir, quite_mode=False):
         """
         Download a single file from s3
+        :param quite_mode: If False, prints the status of each file downloaded
         :param remote_path: The remote s3 file
         :param local_dir: The local directory to save the file to
         :return:
@@ -91,6 +94,7 @@ class S3Util:
     def download_object(self, remote_path, quite_mode=True):
         """
         Downloads binary bytes from s3 without saving file
+        :param quite_mode: If False, prints the status of each file downloaded
         :param remote_path: The remote s3 path
         :return: returns binary bytes from s3 without saving file
         """
@@ -102,8 +106,6 @@ class S3Util:
 
         s3_response_object = s3.get_object(Bucket=bucket, Key=key)
         object_content = s3_response_object['Body'].read()
-
-        download_time = datetime.datetime.now() - start
 
         if not quite_mode:
             download_time = datetime.datetime.now() - start
@@ -132,10 +134,11 @@ Lists the files in s3
     def download_files(self, remote_path, local_dir, num_threads=8, quite_mode=True):
         """
     Downloads the files from s3 to  local directory
+        :param quite_mode: If False, prints the status of each file downloaded
         :param remote_path: The remote s3 path prefix
         :param local_dir: The local directory
         :param num_threads: The number of parallel downloads
-        :return:
+
         """
         lp = lambda b, k, r, l: os.path.join(l, *("s3://{}/{}".format(b, k).replace(r, "").split("/")[0:-1]))
         input_tuples = (
@@ -147,6 +150,12 @@ Lists the files in s3
             pool.starmap(self.download_file, input_tuples)
 
     def download_objects(self, s3_prefix, num_threads=8):
+        """
+Downloads stream of S3 objects, without saving into the local disk
+        :param s3_prefix: The s3 prefix, e.g. s3://mybucket/prefix/
+        :param num_threads: The number of threads to use
+        :return: A list of byte arrays
+        """
         s3_files = ("s3://{}/{}".format(s3_bucket, s3_key) for s3_bucket, s3_key in self.list_files(s3_prefix))
 
         with ThreadPool(num_threads) as pool:
@@ -157,10 +166,10 @@ Lists the files in s3
     def upload_files(self, local_dir, remote_path, quite_mode=True, num_workers=os.cpu_count() - 1):
         """
 Uploads the files in local directory to s3
-        :param num_workers: The number of multiprocesses
+        :param quite_mode: If False, prints the status of each file downloaded
+        :param num_workers: The number of multi-processes to use
         :param local_dir: The local directory
         :param remote_path: The remote s3 prefix
-        :param num_threads: The number of parallel threads used to upload to s3
         """
         rp = lambda f, r, l: "{}/{}".format(r.rstrip("/"), "/".join(
             os.path.expandvars(f).lstrip(os.path.expandvars(l)).lstrip(os.path.sep).split(os.path.sep)))
@@ -186,8 +195,10 @@ Uploads files using a multi threaded pool
 
 if "__main__" == __name__:
     parser = argparse.ArgumentParser()
+
     parser.add_argument("s3url",
                         help="The s3 path. to download from e.g. s3://mybuck/prefix/")
+
     parser.add_argument("localdir",
                         help="The local directory to save the file to")
 
@@ -197,12 +208,11 @@ if "__main__" == __name__:
     args = parser.parse_args()
 
     print("Starting download..")
-    start = datetime.datetime.now()
+    start_time = datetime.datetime.now()
 
     s3_util = S3Util()
     s3_util.download_files(args.s3url, args.localdir, quite_mode=args.quiet)
-    end = datetime.datetime.now()
 
-    download_time = end - start
+    download_endtime = datetime.datetime.now() - start_time
 
-    print("Total time in seconds to download  {} ".format(download_time.total_seconds()))
+    print("Total time in seconds to download  {} ".format(download_endtime.total_seconds()))
