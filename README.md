@@ -6,7 +6,7 @@ GPUs can significantly speed up deep learning training, and have the potential t
 Here, we will be specifically focusing on optimizations for improving I/O for GPU performance tuning, regardless of the underlying infrastructure or deep learning framework, as shown in Figure1. This is one area where customers stand to benefit the most from, obtaining typically 10X improvements in overall GPU training performance by just optimizing IO processing routines. 
 
 
-We will be using the [Caltech 256 dataset](http://www.vision.caltech.edu/Image_Datasets/Caltech256/) to demonstrate the results
+We will be using the [Caltech 256 dataset](http://www.vision.caltech.edu/Image_Datasets/Caltech256/) for image classification to demonstrate the results.
 
 ![Image of GPU IO](docs/DATAFLWO.GPU.png)
 
