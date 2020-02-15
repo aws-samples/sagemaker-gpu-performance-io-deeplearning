@@ -178,10 +178,10 @@ Uploads the files in local directory to s3
                         glob.glob("{}/**".format(local_dir), recursive=True) if os.path.isfile(f)]
 
         partition_size = int(math.ceil(len(input_tuples) / num_workers))
-        input_tuples = [input_tuples[i:i + partition_size] for i in range(0, len(input_tuples), partition_size)]
+        partitioned_input_tuples = [input_tuples[i:i + partition_size] for i in range(0, len(input_tuples), partition_size)]
 
         with Pool(max(1, num_workers)) as processpool:
-            processpool.map(self._uploadfiles_multi_thread, input_tuples)
+            processpool.map(self._uploadfiles_multi_thread, partitioned_input_tuples)
 
     def _uploadfiles_multi_thread(self, input_tuples, num_threads=8):
         """
