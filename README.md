@@ -1,6 +1,5 @@
 
-# GPU performance tune by optimising IO -  Illustrated with Caltech 256 dataset
-
+# GPU IO optimizations for Deep Learning -  Illustrated with Caltech 256 dataset
 
 GPUs can significantly speed up deep learning training, and have the potential to reduce training time from weeks to just hours. However in order to fully benefit from the use of GPUS there are many  aspects to consider such as  a) code optimizations to ensure that underlying hardware is fully utilized  b) using the latest high performant libraries and GPU drivers c) optimizing input/output and network operations to ensure that the data is fed to the GPU at the rate that matches its computations d) optimizing communication between GPUS during multi-GPU or distributed training.
  
