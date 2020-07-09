@@ -171,13 +171,17 @@ Uploads the files in local directory to s3
         :param local_dir: The local directory
         :param remote_path: The remote s3 prefix
         """
+        if num_workers <= 0 :
+            num_workers = 1 
+            
         rp = lambda f, r, l: "{}/{}".format(r.rstrip("/"), "/".join(
             os.path.expandvars(f).lstrip(os.path.expandvars(l)).lstrip(os.path.sep).split(os.path.sep)))
 
         input_tuples = [(f, rp(f, remote_path, local_dir), quite_mode) for f in
                         glob.glob("{}/**".format(local_dir), recursive=True) if os.path.isfile(f)]
 
-        partition_size = int(math.ceil(len(input_tuples) / num_workers))
+        partition_size = int(math.ceil(len(input_tuples) / num_workers)) 
+        
         partitioned_input_tuples = [input_tuples[i:i + partition_size] for i in range(0, len(input_tuples), partition_size)]
 
         with Pool(max(1, num_workers)) as processpool:
